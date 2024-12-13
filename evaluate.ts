@@ -24,7 +24,6 @@ const rl = readline.createInterface({
 });
 
 const assignGrades = async () => {
-    // Membaca file JSON dari folder
     const files = fs.readdirSync(jsonDirectory).filter(file => file.endsWith('.json'));
 
     if (files.length === 0) {
@@ -33,7 +32,6 @@ const assignGrades = async () => {
         return;
     }
 
-    // Menampilkan daftar file
     console.log('Daftar file JSON:');
     files.forEach((file, index) => {
         console.log(`${index + 1}. ${file}`);
@@ -51,10 +49,7 @@ const assignGrades = async () => {
         const selectedFile = files[selectedIndex];
         const dataPath = path.resolve(jsonDirectory, selectedFile);
 
-        // Membaca data JSON dari file yang dipilih
         const jsonData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-
-        // Menampilkan kelompok
         Object.keys(kelompokData).forEach((kelompok) => {
             console.log(`Kelompok ${kelompok}:`);
         });
