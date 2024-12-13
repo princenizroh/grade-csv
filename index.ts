@@ -3,7 +3,7 @@ import * as path from 'path';
 import { parse } from 'csv-parse';
 
 type Data = {
-    "Tanda pengenal": string;
+    "${Tanda pengenal": string;
     "Nama lengkap": string;
     "Alamat surel": string;
     Status: string;
@@ -15,53 +15,46 @@ type Data = {
     "Komentar umpan balik.": string | null;
 };
 
-const inputDirectoryPath = path.resolve(__dirname, './file-csv');
-const outputDirectoryPath = path.resolve(__dirname, './file-json');
+const inputDir = path.resolve(__dirname, './file-csv/');
+const outputDir = path.resolve(__dirname, './file-json/');
 
-// Pastikan folder output ada, jika tidak, buat foldernya
-if (!fs.existsSync(outputDirectoryPath)) {
-    fs.mkdirSync(outputDirectoryPath);
-}
+// Membaca semua file CSV dari folder input
+const fileList = fs.readdirSync(inputDir).filter(file => file.endsWith('.csv'));
 
-const processCSVFiles = async () => {
-    // Baca semua file di folder "Alpro H"
-    const files = fs.readdirSync(inputDirectoryPath).filter((file) => file.endsWith('.csv'));
+const processCSV = async () => {
+    for (const file of fileList) {
+        const filePath = path.join(inputDir, file);
+        let fileContent = fs.readFileSync(filePath, 'utf-8');
 
-    for (const file of files) {
-        const filePath = path.resolve(inputDirectoryPath, file);
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-
-        // Periksa apakah ada byte order mark (BOM) di awal file
-        const contentWithoutBOM = fileContent.charCodeAt(0) === 0xFEFF ? fileContent.slice(1) : fileContent;
+        // Hapus karakter BOM jika ada
+        if (fileContent.charCodeAt(0) === 0xFEFF) {
+            fileContent = fileContent.slice(1);
+        }
 
         parse(
-            contentWithoutBOM,
+            fileContent,
             {
                 columns: true,
                 skip_empty_lines: true,
                 trim: true,
+                delimiter: ',', // Pastikan delimiter sesuai dengan format CSV
+                quote: '"',     // Menangani tanda kutip di dalam CSV
             },
             (err, records: Data[]) => {
                 if (err) {
-                    console.error(`Error reading CSV file (${file}):`, err);
+                    console.error(`Error reading file ${file}:`, err);
                     return;
                 }
 
-                console.log(`Processing file: ${file}`);
-                console.log(`Parsed records from ${file}:`, JSON.stringify(records, null, 2));
+                console.log(`File ${file} berhasil diproses.`);
 
-                // Buat nama file JSON berdasarkan file CSV
-                const outputFileName = file.replace('.csv', '.json');
-                const outputFilePath = path.resolve(outputDirectoryPath, outputFileName);
-
-                // Simpan data sebagai JSON
-                fs.writeFileSync(outputFilePath, JSON.stringify(records, null, 2));
-                console.log(`File JSON disimpan: ${outputFilePath}`);
+                // Simpan hasil parsing ke dalam file JSON
+                const outputPath = path.join(outputDir, file.replace('.csv', '.json'));
+                fs.writeFileSync(outputPath, JSON.stringify(records, null, 2));
+                console.log(`File JSON disimpan di: ${outputPath}`);
             }
         );
     }
 };
 
-processCSVFiles().catch((err) => {
-    console.error('Error processing CSV files:', err);
-});
+processCSV();

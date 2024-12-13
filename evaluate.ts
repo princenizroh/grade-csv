@@ -2,7 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 
-const dataPath = path.resolve(__dirname, './file-json/Modul 12 dan 13.json');
+const dataPath = path.resolve(
+  __dirname, 
+  './file-json/example.json'
+);
 
 const kelompokData: any = {
     1: ["10241031", "11241002", "16241006", "16241030", "20241064", "20241082"],
@@ -15,6 +18,7 @@ const kelompokData: any = {
     8: ["11241026", "11241038", "17241007", "17241013", "20241028", "20241076"],
     9: ["10241049", "17241019", "17241037", "20241034", "20241046", "20241070"],
     10: ["11241020", "11241032", "11241044", "11241062", "17241031", "20241052"],
+    11: ["11161099", "11161098"]
 };
 
 const rl = readline.createInterface({

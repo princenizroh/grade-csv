@@ -13,8 +13,8 @@ const formatDate = (date: Date) => {
   return date.toLocaleString('en-US', options); 
 };
 
-const jsonDirectoryPath = path.resolve(__dirname, './json-Alpro');
-const csvDirectoryPath = path.resolve(__dirname, './fix-Alpro');
+const jsonDirectoryPath = path.resolve(__dirname, './file-json');
+const csvDirectoryPath = path.resolve(__dirname, './fix-csv');
 
 const fileList = fs.readdirSync(jsonDirectoryPath).filter(file => file.endsWith('.json'));
 
