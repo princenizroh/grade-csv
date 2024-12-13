@@ -2,10 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 
-const dataPath = path.resolve(
-  __dirname, 
-  './file-json/example.json'
-);
+const jsonDirectory = path.resolve(__dirname, './file-json');
 
 const kelompokData: any = {
     1: ["10241031", "11241002", "16241006", "16241030", "20241064", "20241082"],
@@ -22,53 +19,86 @@ const kelompokData: any = {
 };
 
 const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
+    input: process.stdin,
+    output: process.stdout,
+});
 
 const assignGrades = async () => {
-  const jsonData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+    // Membaca file JSON dari folder
+    const files = fs.readdirSync(jsonDirectory).filter(file => file.endsWith('.json'));
 
-  Object.keys(kelompokData).forEach((kelompok) => {
-    console.log(`Kelompok ${kelompok}:`);
-  })
-
-  rl.question("Pilih kelompok: ", (kelompok) => {
-    if (!kelompokData[kelompok]) {
-      console.error('Kelompok tidak ditemukan');
-      rl.close();
-      return;
+    if (files.length === 0) {
+        console.error('Tidak ada file JSON ditemukan di folder "file-json".');
+        rl.close();
+        return;
     }
 
-    const anggota = kelompokData[kelompok];
-    console.log(`Anggota kelompok ${kelompok}:`, anggota);
-
-    anggota.forEach((id: any) => {
-      const mahasiswa = jsonData.find((item: any) => 
-        item["Alamat surel"].includes(`${id}@student.itk.ac.id`));
-
-      if (mahasiswa) {
-        console.log(`- ${mahasiswa["Nama lengkap"]} (${mahasiswa["Alamat surel"]})`);
-      }
+    // Menampilkan daftar file
+    console.log('Daftar file JSON:');
+    files.forEach((file, index) => {
+        console.log(`${index + 1}. ${file}`);
     });
 
-    rl.question(`Masukkan nilai untuk kelompok ${kelompok}: `, (nilai) => {
-      anggota.forEach((id: any) => {
-        const mahasiswa = jsonData.find((item: any) => item["Alamat surel"].includes(`${id}@student.itk.ac.id`));
+    rl.question('Pilih file (masukkan nomor): ', (fileIndex) => {
+        const selectedIndex = parseInt(fileIndex, 10) - 1;
 
-        if (mahasiswa) {
-          console.log(`Mengubah nilai ${mahasiswa["Nama lengkap"]} (${mahasiswa["Alamat surel"]}) menjadi ${nilai}`);
-          mahasiswa["Nilai"] = nilai;
-        } else {
-          console.log(`Mahasiswa dengan ID ${id} tidak ditemukan`);
+        if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= files.length) {
+            console.error('Nomor file tidak valid.');
+            rl.close();
+            return;
         }
-      });
-      fs.writeFileSync(dataPath, JSON.stringify(jsonData, null, 2));
-      console.log(`Nilai untuk kelompok ${kelompok} telah disimpan`);
 
-      rl.close();
-    })
-  })
-}
+        const selectedFile = files[selectedIndex];
+        const dataPath = path.resolve(jsonDirectory, selectedFile);
+
+        // Membaca data JSON dari file yang dipilih
+        const jsonData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+
+        // Menampilkan kelompok
+        Object.keys(kelompokData).forEach((kelompok) => {
+            console.log(`Kelompok ${kelompok}:`);
+        });
+
+        rl.question('Pilih kelompok: ', (kelompok) => {
+            if (!kelompokData[kelompok]) {
+                console.error('Kelompok tidak ditemukan');
+                rl.close();
+                return;
+            }
+
+            const anggota = kelompokData[kelompok];
+            console.log(`Anggota kelompok ${kelompok}:`, anggota);
+
+            anggota.forEach((id: any) => {
+                const mahasiswa = jsonData.find((item: any) =>
+                    item['Alamat surel'].includes(`${id}@student.itk.ac.id`)
+                );
+
+                if (mahasiswa) {
+                    console.log(`- ${mahasiswa['Nama lengkap']} (${mahasiswa['Alamat surel']})`);
+                }
+            });
+
+            rl.question(`Masukkan nilai untuk kelompok ${kelompok}: `, (nilai) => {
+                anggota.forEach((id: any) => {
+                    const mahasiswa = jsonData.find((item: any) =>
+                        item['Alamat surel'].includes(`${id}@student.itk.ac.id`)
+                    );
+
+                    if (mahasiswa) {
+                        console.log(`Mengubah nilai ${mahasiswa['Nama lengkap']} (${mahasiswa['Alamat surel']}) menjadi ${nilai}`);
+                        mahasiswa['Nilai'] = nilai;
+                    } else {
+                        console.log(`Mahasiswa dengan ID ${id} tidak ditemukan`);
+                    }
+                });
+                fs.writeFileSync(dataPath, JSON.stringify(jsonData, null, 2));
+                console.log(`Nilai untuk kelompok ${kelompok} telah disimpan`);
+
+                rl.close();
+            });
+        });
+    });
+};
 
 assignGrades();
